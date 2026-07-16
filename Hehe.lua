@@ -584,3 +584,136 @@ end)
 BtnDong.MouseButton1Click:Connect(function()
     MainMenu.Visible = false
 end)
+---------------------------------------------------------------------------
+-- 4. PHÂN HỆ 1: TAB INFO
+---------------------------------------------------------------------------
+local InfoFrame = Instance.new("Frame")
+InfoFrame.Name = "InfoFrame"
+InfoFrame.Size = UDim2.new(0, 170, 0, 240)
+InfoFrame.Position = UDim2.new(0, 138, 0, 20)
+InfoFrame.BackgroundTransparency = 1
+InfoFrame.Visible = false
+InfoFrame.Parent = MainMenu
+
+local InfoTitle = Instance.new("TextLabel")
+InfoTitle.Size = UDim2.new(1, 0, 0, 25)
+InfoTitle.BackgroundTransparency = 1
+InfoTitle.Font = Enum.Font.SourceSansBold
+InfoTitle.Text = "✨ THÔNG TIN TÀI KHOẢN ✨"
+InfoTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+InfoTitle.TextSize = 13
+InfoTitle.TextXAlignment = Enum.TextXAlignment.Left
+InfoTitle.Parent = InfoFrame
+addTextStroke(InfoTitle)
+
+local TiktokLabel = Instance.new("TextLabel")
+TiktokLabel.Size = UDim2.new(1, 0, 0, 25)
+TiktokLabel.Position = UDim2.new(0, 0, 0, 25)
+TiktokLabel.BackgroundTransparency = 1
+TiktokLabel.Font = Enum.Font.SourceSansBold
+TiktokLabel.Text = "🎵 TikTok: Yuya_lwo"
+TiktokLabel.TextSize = 14
+TiktokLabel.TextXAlignment = Enum.TextXAlignment.Left
+TiktokLabel.Parent = InfoFrame
+addTextStroke(TiktokLabel)
+
+local RobloxLabel = Instance.new("TextLabel")
+RobloxLabel.Size = UDim2.new(1, 0, 0, 25)
+RobloxLabel.Position = UDim2.new(0, 0, 0, 50)
+RobloxLabel.BackgroundTransparency = 1
+RobloxLabel.Font = Enum.Font.SourceSansBold
+RobloxLabel.Text = "🎮 Roblox: vyyeuchi2"
+RobloxLabel.TextSize = 14
+RobloxLabel.TextXAlignment = Enum.TextXAlignment.Left
+RobloxLabel.Parent = InfoFrame
+addTextStroke(RobloxLabel)
+
+-- ==================== HỆ THỐNG PHÁT NHẠC ĐA BÀI ====================
+local TRUC_XINH_ID = "rbxassetid://119165216580381"
+
+-- Sửa lại hàm playMusic để dùng đúng biến global MY_SOUND_ID
+local function playMusic(soundId)
+    if bgMusic then bgMusic:Destroy() end
+    
+    bgMusic = Instance.new("Sound")
+    bgMusic.SoundId = soundId
+    bgMusic.Volume = 0.4
+    bgMusic.Looped = false
+    bgMusic.Parent = workspace
+    bgMusic:Play()
+    
+    currentMusicId = soundId
+    isMusicPlaying = true
+end
+
+-- NÚT BÀI NHẠC 1
+local BtnToggleMusic1 = Instance.new("TextButton")
+BtnToggleMusic1.Name = "BtnToggleMusic1"
+BtnToggleMusic1.Size = UDim2.new(0, 160, 0, 30)
+BtnToggleMusic1.Position = UDim2.new(0, 0, 0, 85)
+BtnToggleMusic1.BackgroundColor3 = Color3.fromRGB(255, 165, 2)
+BtnToggleMusic1.BackgroundTransparency = 0.3
+BtnToggleMusic1.Font = Enum.Font.SourceSansBold
+BtnToggleMusic1.Text = "🎵 Tắt Nhạc Nền 1"
+BtnToggleMusic1.TextColor3 = Color3.fromRGB(255, 255, 255)
+BtnToggleMusic1.TextSize = 11
+BtnToggleMusic1.Parent = InfoFrame
+
+local Btn1Corner = Instance.new("UICorner")
+Btn1Corner.CornerRadius = UDim.new(0, 6)
+Btn1Corner.Parent = BtnToggleMusic1
+local Btn1Stroke = Instance.new("UIStroke")
+Btn1Stroke.Color = Color3.fromRGB(255, 215, 0)
+Btn1Stroke.Thickness = 1
+Btn1Stroke.Parent = BtnToggleMusic1
+
+-- NÚT BÀI TRÚC XINH
+local BtnToggleMusic2 = Instance.new("TextButton")
+BtnToggleMusic2.Name = "BtnToggleMusic2"
+BtnToggleMusic2.Size = UDim2.new(0, 160, 0, 30)
+BtnToggleMusic2.Position = UDim2.new(0, 0, 0, 120)
+BtnToggleMusic2.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+BtnToggleMusic2.BackgroundTransparency = 0.3
+BtnToggleMusic2.Font = Enum.Font.SourceSansBold
+BtnToggleMusic2.Text = "🎋 Bật Trúc Xinh"
+BtnToggleMusic2.TextColor3 = Color3.fromRGB(255, 255, 255)
+BtnToggleMusic2.TextSize = 11
+BtnToggleMusic2.Parent = InfoFrame
+
+local Btn2Corner = Instance.new("UICorner")
+Btn2Corner.CornerRadius = UDim.new(0, 6)
+Btn2Corner.Parent = BtnToggleMusic2
+local Btn2Stroke = Instance.new("UIStroke")
+Btn2Stroke.Color = Color3.fromRGB(255, 215, 0)
+Btn2Stroke.Thickness = 1
+Btn2Stroke.Parent = BtnToggleMusic2
+
+BtnToggleMusic1.MouseButton1Click:Connect(function()
+    if currentMusicId == MY_SOUND_ID then
+        stopBackgroundMusic()
+        currentMusicId = nil
+        BtnToggleMusic1.Text = "🎵 Bật Nhạc Nền 1"
+        BtnToggleMusic1.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    else
+        playMusic(MY_SOUND_ID)
+        BtnToggleMusic1.Text = "🎵 Tắt Nhạc Nền 1"
+        BtnToggleMusic1.BackgroundColor3 = Color3.fromRGB(255, 165, 2)
+        BtnToggleMusic2.Text = "🎋 Bật Trúc Xinh"
+        BtnToggleMusic2.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    end
+end)
+
+BtnToggleMusic2.MouseButton1Click:Connect(function()
+    if currentMusicId == TRUC_XINH_ID then
+        stopBackgroundMusic()
+        currentMusicId = nil
+        BtnToggleMusic2.Text = "🎋 Bật Trúc Xinh"
+        BtnToggleMusic2.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    else
+        playMusic(TRUC_XINH_ID)
+        BtnToggleMusic2.Text = "🎋 Tắt Trúc Xinh"
+        BtnToggleMusic2.BackgroundColor3 = Color3.fromRGB(255, 165, 2)
+        BtnToggleMusic1.Text = "🎵 Bật Nhạc Nền 1"
+        BtnToggleMusic1.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    end
+end)
