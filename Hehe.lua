@@ -393,7 +393,7 @@ BtnJerkOthers.MouseButton1Click:Connect(function()
 end)
 
 ---------------------------------------------------------------------------
--- 6. PHÂN HỆ 3: TAB TỔNG HỢP (SPEED 1-999 & DANH SÁCH SCRIPT) 📦
+-- 6. PHÂN HỆ 3: TAB TỔNG HỢP (DANH SÁCH SCRIPT) 📦
 ---------------------------------------------------------------------------
 local TongHopFrame = Instance.new("Frame")
 TongHopFrame.Name = "TongHopFrame"
@@ -414,90 +414,13 @@ TongHopTitle.TextXAlignment = Enum.TextXAlignment.Left
 TongHopTitle.Parent = TongHopFrame
 addTextStroke(TongHopTitle)
 
--- ==================== HỆ THỐNG ĐIỀU CHỈNH SPEED 1-999 ====================
-local SpeedFrame = Instance.new("Frame")
-SpeedFrame.Size = UDim2.new(1, 0, 0, 35)
-SpeedFrame.Position = UDim2.new(0, 0, 0, 30)
-SpeedFrame.BackgroundTransparency = 1
-SpeedFrame.Parent = TongHopFrame
-
-local SpeedLabel = Instance.new("TextLabel")
-SpeedLabel.Size = UDim2.new(0.5, 0, 1, 0)
-SpeedLabel.BackgroundTransparency = 1
-SpeedLabel.Font = Enum.Font.SourceSansBold
-SpeedLabel.Text = "⚡ Tốc độ (1-999):"
-SpeedLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-SpeedLabel.TextSize = 11
-SpeedLabel.TextXAlignment = Enum.TextXAlignment.Left
-SpeedLabel.Parent = SpeedFrame
-addTextStroke(SpeedLabel)
-
-local SpeedInput = Instance.new("TextBox")
-SpeedInput.Size = UDim2.new(0.45, 0, 0.8, 0)
-SpeedInput.Position = UDim2.new(0.52, 0, 0.1, 0)
-SpeedInput.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-SpeedInput.Font = Enum.Font.SourceSansBold
-SpeedInput.Text = "16" -- Mặc định là 16 (tốc độ thường của Roblox)
-SpeedInput.TextColor3 = Color3.fromRGB(0, 255, 127)
-SpeedInput.TextSize = 12
-SpeedInput.Parent = SpeedFrame
-
-local InputCorner = Instance.new("UICorner")
-InputCorner.CornerRadius = UDim.new(0, 4)
-InputCorner.Parent = SpeedInput
-
-local InputStroke = Instance.new("UIStroke")
-InputStroke.Color = Color3.fromRGB(0, 255, 127)
-InputStroke.Thickness = 1
-InputStroke.Parent = SpeedInput
-
--- Lắng nghe thay đổi tốc độ chạy của nhân vật
-local currentSpeed = 16
-SpeedInput.FocusLost:Connect(function(enterPressed)
-    local num = tonumber(SpeedInput.Text)
-    if num then
-        -- Giới hạn tốc độ từ 1 đến 999
-        if num < 1 then num = 1 end
-        if num > 999 then num = 999 end
-        SpeedInput.Text = tostring(num)
-        currentSpeed = num
-        
-        -- Cập nhật tốc độ ngay lập tức nếu nhân vật tồn tại
-        if player.Character and player.Character:FindFirstChild("Humanoid") then
-            player.Character.Humanoid.WalkSpeed = currentSpeed
-        end
-    else
-        SpeedInput.Text = tostring(currentSpeed)
-    end
-end)
-
--- Đảm bảo khi hồi sinh (Spawn) lại thì tốc độ cài đặt vẫn giữ nguyên
-player.CharacterAdded:Connect(function(char)
-    local humanoid = char:WaitForChild("Humanoid")
-    task.wait(0.5) -- Đợi nhân vật tải xong hoàn toàn
-    humanoid.WalkSpeed = currentSpeed
-end)
-
--- Vòng lặp kiểm tra liên tục để khoá tốc độ (Tránh bị game tự reset về 16)
-task.spawn(function()
-    while true do
-        task.wait(0.1)
-        if player.Character and player.Character:FindFirstChild("Humanoid") then
-            if player.Character.Humanoid.WalkSpeed ~= currentSpeed then
-                player.Character.Humanoid.WalkSpeed = currentSpeed
-            end
-        end
-    end
-end)
--- =========================================================================
-
--- Bảng cuộn chứa danh sách Script khác nằm dưới ô nhập Speed
+-- Bảng cuộn chứa danh sách Script khác (Kéo dài hết mức do không có ô speed)
 local ScrollFrame = Instance.new("ScrollingFrame")
-ScrollFrame.Size = UDim2.new(1, 0, 0, 200)
-ScrollFrame.Position = UDim2.new(0, 0, 0, 70)
+ScrollFrame.Size = UDim2.new(1, 0, 0, 230)
+ScrollFrame.Position = UDim2.new(0, 0, 0, 35)
 ScrollFrame.BackgroundTransparency = 1
 ScrollFrame.ScrollBarThickness = 4
-ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 260)
+ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 240)
 ScrollFrame.Parent = TongHopFrame
 
 local ScrollLayout = Instance.new("UIListLayout")
@@ -545,3 +468,119 @@ local function runFly()
     local hrp = character:WaitForChild("HumanoidRootPart")
     local humanoid = character:WaitForChild("Humanoid")
     
+    local flying = true
+    local speed = 50
+    local bv = Instance.new("BodyVelocity")
+    local bg = Instance.new("BodyGyro")
+    
+    bv.MaxForce = Vector3.new(1e9, 1e9, 1e9)
+    bv.Velocity = Vector3.new(0, 0.1, 0)
+    bv.Parent = hrp
+    
+    bg.MaxTorque = Vector3.new(1e9, 1e9, 1e9)
+    bg.CFrame = hrp.CFrame
+    bg.Parent = hrp
+    
+    task.spawn(function()
+        while flying and character and hrp and humanoid.Health > 0 do
+            task.wait()
+            local direction = Vector3.new(0, 0, 0)
+            if UserInputService:IsKeyDown(Enum.KeyCode.W) then direction = direction + workspace.CurrentCamera.CFrame.LookVector end
+            if UserInputService:IsKeyDown(Enum.KeyCode.S) then direction = direction - workspace.CurrentCamera.CFrame.LookVector end
+            if UserInputService:IsKeyDown(Enum.KeyCode.A) then direction = direction - workspace.CurrentCamera.CFrame.LookVector.Unit:Cross(Vector3.new(0,1,0)) end
+            if UserInputService:IsKeyDown(Enum.KeyCode.D) then direction = direction + workspace.CurrentCamera.CFrame.LookVector.Unit:Cross(Vector3.new(0,1,0)) end
+            
+            bv.Velocity = direction * speed
+            bg.CFrame = workspace.CurrentCamera.CFrame
+        end
+        bv:Destroy()
+        bg:Destroy()
+    end)
+end
+
+-- Thêm các nút script vào danh sách cuộn của Tab Tổng hợp
+createScriptButton("🚀 Script Fly (Bay)", runFly, 1, false)
+createScriptButton("🔍 Dex Explorer (Xem Core)", "https://raw.githubusercontent.com/infyyd/obfuscator/main/asfshgfhfhffgh", 2, true)
+createScriptButton("🕵️ SimpleSpy (Theo dõi Remote)", "https://raw.githubusercontent.com/7YSe7en/SimpleSpyV3/main/SimpleSpyV3.lua", 3, true)
+createScriptButton("🌀 Reanimate Animation", "https://raw.githubusercontent.com/MyWorldServer/Reanimate/master/Reanimate.lua", 4, true)
+
+---------------------------------------------------------------------------
+-- 7. KHỞI TẠO CÁC NÚT BẤM MENU TRÁI (BỎ NÚT CÀI ĐẶT)
+---------------------------------------------------------------------------
+local function createMenuText(text, order, isTitle)
+    local label = Instance.new("TextButton")
+    label.Size = UDim2.new(0.92, 0, 0, isTitle and 18 or 28) -- Tăng nhẹ kích thước nút lên 28 cho cân đối menu
+    label.BackgroundTransparency = 1
+    label.Font = Enum.Font.SourceSansBold
+    label.Text = text
+    label.TextColor3 = isTitle and Color3.fromRGB(255, 234, 167) or Color3.fromRGB(255, 255, 255)
+    label.TextSize = isTitle and 12 or 11
+    label.LayoutOrder = order
+    
+    if not isTitle then
+        label.TextXAlignment = Enum.TextXAlignment.Left
+        local btnPadding = Instance.new("UIPadding")
+        btnPadding.PaddingLeft = UDim.new(0, 4)
+        btnPadding.Parent = label
+        
+        label.MouseEnter:Connect(function()
+            TweenService:Create(label, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(255, 165, 2)}):Play()
+        end)
+        label.MouseLeave:Connect(function()
+            TweenService:Create(label, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
+        end)
+    end
+    
+    label.Parent = GlassBox
+    return label
+end
+
+createMenuText("👽 Người Ngoài", 1, true)
+createMenuText("Hành Tinh", 2, true)
+createMenuText("━━━━━━", 3, true)
+
+local BtnInfo = createMenuText("ℹ️ Info", 4, false)
+local BtnFE = createMenuText("🛠️ FE", 5, false)
+local BtnTongHop = createMenuText("📦 Tổng hợp", 6, false)
+local BtnDong = createMenuText("❌ Đóng", 7, false)
+
+BtnDong.TextColor3 = Color3.fromRGB(255, 107, 107)
+BtnDong.MouseLeave:Connect(function() BtnDong.TextColor3 = Color3.fromRGB(255, 107, 107) end)
+
+---------------------------------------------------------------------------
+-- 8. LOGIC CHUYỂN TAB VÀ BẬT/TẮT MENU
+---------------------------------------------------------------------------
+local function hideAllTabs()
+    InfoFrame.Visible = false
+    FeFrame.Visible = false
+    TongHopFrame.Visible = false
+end
+
+BtnInfo.MouseButton1Click:Connect(function()
+    hideAllTabs()
+    InfoFrame.Visible = true
+end)
+
+BtnFE.MouseButton1Click:Connect(function()
+    hideAllTabs()
+    FeFrame.Visible = true
+end)
+
+BtnTongHop.MouseButton1Click:Connect(function()
+    hideAllTabs()
+    TongHopFrame.Visible = true
+end)
+
+Circle.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        local initialPos = Circle.Position
+        task.wait(0.12)
+        if Circle.Position == initialPos then
+            MainMenu.Visible = not MainMenu.Visible
+        end
+    end
+end)
+
+BtnDong.MouseButton1Click:Connect(function()
+    MainMenu.Visible = false
+end)
