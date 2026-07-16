@@ -2,12 +2,61 @@ local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
-local Lighting = game:GetService("Lighting")
+local ContentProvider = game:GetService("ContentProvider")
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
--- Tạo ScreenGui chính
+-- ===========================================================================
+-- HỆ THỐNG NHẠC NỀN (KHÔNG CÓ SFX CLICK) 🎵
+-- ===========================================================================
+local MY_SOUND_ID = "rbxassetid://111063699178716" 
+
+local bgMusic = nil
+local isMusicPlaying = true
+
+-- Hàm quản lý nhạc nền
+local function playBackgroundMusic()
+    if bgMusic then bgMusic:Destroy() end
+    
+    bgMusic = Instance.new("Sound")
+    bgMusic.SoundId = MY_SOUND_ID
+    bgMusic.Volume = 0.4 -- Âm lượng vừa phải mượt mà
+    bgMusic.Looped = false -- Chạy 1 lần duy nhất theo yêu cầu
+    bgMusic.Parent = workspace
+    bgMusic:Play()
+    
+    -- Tự động đổi trạng thái nút nếu nhạc chạy hết bài
+    bgMusic.Ended:Connect(function()
+        isMusicPlaying = false
+        local btn = gui and gui:FindFirstChild("MainMenu") and gui.MainMenu:FindFirstChild("InfoFrame") and gui.MainMenu.InfoFrame:FindFirstChild("BtnToggleMusic")
+        if btn then
+            btn.Text = "🎵 Bật Nhạc Nền"
+            btn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+        end
+    end)
+end
+
+local function stopBackgroundMusic()
+    if bgMusic then
+        bgMusic:Stop()
+        bgMusic:Destroy()
+        bgMusic = nil
+    end
+    isMusicPlaying = false
+end
+
+-- Tiền tải (Preload) âm thanh
+pcall(function()
+    ContentProvider:PreloadAsync({ MY_SOUND_ID })
+end)
+
+-- Tự động bật nhạc nền ngay khi execute
+playBackgroundMusic()
+
+-- ===========================================================================
+-- KHỞI TẠO SCREEN GUI CHÍNH
+-- ===========================================================================
 local gui = Instance.new("ScreenGui")
 gui.Name = "NguoiNgoaiHanhTinh"
 gui.ResetOnSpawn = false
@@ -72,7 +121,7 @@ MainMenu.Size = UDim2.new(0, 320, 0, 320)
 MainMenu.Position = UDim2.new(0.5, -160, 0.5, -160)
 MainMenu.BackgroundTransparency = 1
 MainMenu.Active = true
-MainMenu.Visible = false
+MainMenu.Visible = false -- KHÔNG tự động mở GUI khi mới load script
 MainMenu.ScaleType = Enum.ScaleType.Crop
 MainMenu.Image = "https://www.roblox.com/asset-thumbnail/image?assetId=130678370021345&width=420&height=420&format=png"
 MainMenu.Parent = gui
@@ -127,7 +176,7 @@ local function addTextStroke(label)
 end
 
 ---------------------------------------------------------------------------
--- 4. TAB 1: INFO
+-- 4. PHÂN HỆ 1: TAB INFO
 ---------------------------------------------------------------------------
 local InfoFrame = Instance.new("Frame")
 InfoFrame.Name = "InfoFrame"
@@ -170,6 +219,54 @@ RobloxLabel.TextXAlignment = Enum.TextXAlignment.Left
 RobloxLabel.Parent = InfoFrame
 addTextStroke(RobloxLabel)
 
+-- NÚT BẬT/TẮT NHẠC NỀN
+local BtnToggleMusic = Instance.new("TextButton")
+BtnToggleMusic.Name = "BtnToggleMusic"
+BtnToggleMusic.Size = UDim2.new(0, 160, 0, 35)
+BtnToggleMusic.Position = UDim2.new(0, 0, 0, 100)
+BtnToggleMusic.BackgroundColor3 = Color3.fromRGB(255, 165, 2)
+BtnToggleMusic.BackgroundTransparency = 0.3
+BtnToggleMusic.Font = Enum.Font.SourceSansBold
+BtnToggleMusic.Text = "🎵 Tắt Nhạc Nền"
+BtnToggleMusic.TextColor3 = Color3.fromRGB(255, 255, 255)
+BtnToggleMusic.TextSize = 12
+BtnToggleMusic.Parent = InfoFrame
+
+local BtnToggleMusicCorner = Instance.new("UICorner")
+BtnToggleMusicCorner.CornerRadius = UDim.new(0, 6)
+BtnToggleMusicCorner.Parent = BtnToggleMusic
+
+local BtnToggleMusicStroke = Instance.new("UIStroke")
+BtnToggleMusicStroke.Color = Color3.fromRGB(255, 215, 0)
+BtnToggleMusicStroke.Thickness = 1
+BtnToggleMusicStroke.Parent = BtnToggleMusic
+
+BtnToggleMusic.MouseButton1Click:Connect(function()
+    isMusicPlaying = not isMusicPlaying
+    if isMusicPlaying then
+        playBackgroundMusic()
+        BtnToggleMusic.Text = "🎵 Tắt Nhạc Nền"
+        BtnToggleMusic.BackgroundColor3 = Color3.fromRGB(255, 165, 2)
+    else
+        stopBackgroundMusic()
+        BtnToggleMusic.Text = "🎵 Bật Nhạc Nền"
+        BtnToggleMusic.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    end
+end)
+
+-- THÊM DÒNG: CHƯA CẬP NHẬT NHẠC KHÁC
+local MusicStatusLabel = Instance.new("TextLabel")
+MusicStatusLabel.Size = UDim2.new(1, 0, 0, 20)
+MusicStatusLabel.Position = UDim2.new(0, 0, 0, 145)
+MusicStatusLabel.BackgroundTransparency = 1
+MusicStatusLabel.Font = Enum.Font.SourceSansItalic
+MusicStatusLabel.Text = "🎧 Danh sách nhạc khác: Chưa cập nhật"
+MusicStatusLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+MusicStatusLabel.TextSize = 10
+MusicStatusLabel.TextXAlignment = Enum.TextXAlignment.Left
+MusicStatusLabel.Parent = InfoFrame
+addTextStroke(MusicStatusLabel)
+
 local hue = 0
 RunService.RenderStepped:Connect(function(deltaTime)
     hue = (hue + deltaTime * 0.1) % 1
@@ -179,7 +276,7 @@ RunService.RenderStepped:Connect(function(deltaTime)
 end)
 
 ---------------------------------------------------------------------------
--- 5. TAB 2: FE
+-- 5. PHÂN HỆ 2: TAB FE
 ---------------------------------------------------------------------------
 local FeFrame = Instance.new("Frame")
 FeFrame.Name = "FeFrame"
@@ -255,11 +352,9 @@ local jerkAmount = 0.5
 
 BtnJerkOthers.MouseButton1Click:Connect(function()
     JerkingEveryone = not JerkingEveryone
-    
     if JerkingEveryone then
         BtnJerkOthers.BackgroundColor3 = Color3.fromRGB(255, 100, 200)
         BtnJerkOthers.TextColor3 = Color3.fromRGB(255, 255, 255)
-        
         jerkConnection = RunService.Heartbeat:Connect(function()
             for _, otherPlayer in ipairs(Players:GetPlayers()) do
                 if otherPlayer ~= player and otherPlayer.Character then
@@ -282,7 +377,6 @@ BtnJerkOthers.MouseButton1Click:Connect(function()
         end
         BtnJerkOthers.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
         BtnJerkOthers.TextColor3 = Color3.fromRGB(255, 100, 200)
-        
         for _, otherPlayer in ipairs(Players:GetPlayers()) do
             if otherPlayer.Character then
                 local char = otherPlayer.Character
@@ -299,253 +393,155 @@ BtnJerkOthers.MouseButton1Click:Connect(function()
 end)
 
 ---------------------------------------------------------------------------
--- 6. TAB 3: TỔNG HỢP (SLIDER SPEED, SLIDER JUMP, FLOAT, NOCLIP, INF JUMP, ESP)
+-- 6. PHÂN HỆ 3: TAB TỔNG HỢP (SPEED 1-999 & DANH SÁCH SCRIPT) 📦
 ---------------------------------------------------------------------------
 local TongHopFrame = Instance.new("Frame")
 TongHopFrame.Name = "TongHopFrame"
 TongHopFrame.Size = UDim2.new(0, 170, 0, 280)
-TongHopFrame.Position = UDim2.new(0, 138, 0, 15)
+TongHopFrame.Position = UDim2.new(0, 138, 0, 20)
 TongHopFrame.BackgroundTransparency = 1
 TongHopFrame.Visible = false
 TongHopFrame.Parent = MainMenu
 
 local TongHopTitle = Instance.new("TextLabel")
-TongHopTitle.Size = UDim2.new(1, 0, 0, 18)
+TongHopTitle.Size = UDim2.new(1, 0, 0, 25)
 TongHopTitle.BackgroundTransparency = 1
 TongHopTitle.Font = Enum.Font.SourceSansBold
-TongHopTitle.Text = "📦 TAB TỔNG HỢP 📦"
-TongHopTitle.TextColor3 = Color3.fromRGB(0, 255, 127)
+TongHopTitle.Text = "📦 TỔNG HỢP SCRIPT 📦"
+TongHopTitle.TextColor3 = Color3.fromRGB(0, 170, 255)
 TongHopTitle.TextSize = 13
 TongHopTitle.TextXAlignment = Enum.TextXAlignment.Left
 TongHopTitle.Parent = TongHopFrame
 addTextStroke(TongHopTitle)
 
--- [1] THANH KÉO TỐC ĐỘ (SLIDER SPEED 1 - 1000)
-local SpeedSliderFrame = Instance.new("Frame")
-SpeedSliderFrame.Name = "SpeedSliderFrame"
-SpeedSliderFrame.Size = UDim2.new(0, 160, 0, 32)
-SpeedSliderFrame.Position = UDim2.new(0, 0, 0, 22)
-SpeedSliderFrame.BackgroundTransparency = 1
-SpeedSliderFrame.Parent = TongHopFrame
+-- ==================== HỆ THỐNG ĐIỀU CHỈNH SPEED 1-999 ====================
+local SpeedFrame = Instance.new("Frame")
+SpeedFrame.Size = UDim2.new(1, 0, 0, 35)
+SpeedFrame.Position = UDim2.new(0, 0, 0, 30)
+SpeedFrame.BackgroundTransparency = 1
+SpeedFrame.Parent = TongHopFrame
 
 local SpeedLabel = Instance.new("TextLabel")
-SpeedLabel.Size = UDim2.new(1, 0, 0, 12)
+SpeedLabel.Size = UDim2.new(0.5, 0, 1, 0)
 SpeedLabel.BackgroundTransparency = 1
 SpeedLabel.Font = Enum.Font.SourceSansBold
-SpeedLabel.Text = "Tốc độ: 16"
+SpeedLabel.Text = "⚡ Tốc độ (1-999):"
 SpeedLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-SpeedLabel.TextSize = 10
+SpeedLabel.TextSize = 11
 SpeedLabel.TextXAlignment = Enum.TextXAlignment.Left
-SpeedLabel.Parent = SpeedSliderFrame
+SpeedLabel.Parent = SpeedFrame
 addTextStroke(SpeedLabel)
 
-local SpeedBar = Instance.new("Frame")
-SpeedBar.Size = UDim2.new(1, 0, 0, 4)
-SpeedBar.Position = UDim2.new(0, 0, 0, 18)
-SpeedBar.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-SpeedBar.BorderSizePixel = 0
-SpeedBar.Parent = SpeedSliderFrame
+local SpeedInput = Instance.new("TextBox")
+SpeedInput.Size = UDim2.new(0.45, 0, 0.8, 0)
+SpeedInput.Position = UDim2.new(0.52, 0, 0.1, 0)
+SpeedInput.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+SpeedInput.Font = Enum.Font.SourceSansBold
+SpeedInput.Text = "16" -- Mặc định là 16 (tốc độ thường của Roblox)
+SpeedInput.TextColor3 = Color3.fromRGB(0, 255, 127)
+SpeedInput.TextSize = 12
+SpeedInput.Parent = SpeedFrame
 
-local SpeedBarCorner = Instance.new("UICorner")
-SpeedBarCorner.CornerRadius = UDim.new(1, 0)
-SpeedBarCorner.Parent = SpeedBar
+local InputCorner = Instance.new("UICorner")
+InputCorner.CornerRadius = UDim.new(0, 4)
+InputCorner.Parent = SpeedInput
 
-local SpeedFill = Instance.new("Frame")
-SpeedFill.Size = UDim2.new(0.016, 0, 1, 0)
-SpeedFill.BackgroundColor3 = Color3.fromRGB(0, 191, 255)
-SpeedFill.BorderSizePixel = 0
-SpeedFill.Parent = SpeedBar
+local InputStroke = Instance.new("UIStroke")
+InputStroke.Color = Color3.fromRGB(0, 255, 127)
+InputStroke.Thickness = 1
+InputStroke.Parent = SpeedInput
 
-local SpeedFillCorner = Instance.new("UICorner")
-SpeedFillCorner.CornerRadius = UDim.new(1, 0)
-SpeedFillCorner.Parent = SpeedFill
-
-local SpeedBtn = Instance.new("ImageButton")
-SpeedBtn.Size = UDim2.new(0, 10, 0, 10)
-SpeedBtn.Position = UDim2.new(0.016, -5, 0.5, -5)
-SpeedBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-SpeedBtn.Parent = SpeedBar
-
-local SpeedBtnCorner = Instance.new("UICorner")
-SpeedBtnCorner.CornerRadius = UDim.new(1, 0)
-SpeedBtnCorner.Parent = SpeedBtn
-
+-- Lắng nghe thay đổi tốc độ chạy của nhân vật
 local currentSpeed = 16
-local isSpeedSliding = false
-
-local function updateSpeedSlider(input)
-    local barWidth = SpeedBar.AbsoluteSize.X
-    local relativeX = math.clamp(input.Position.X - SpeedBar.AbsolutePosition.X, 0, barWidth)
-    local percentage = relativeX / barWidth
-    currentSpeed = math.floor(1 + (percentage * 999))
-    SpeedLabel.Text = "Tốc độ: " .. tostring(currentSpeed)
-    
-    SpeedFill.Size = UDim2.new(percentage, 0, 1, 0)
-    SpeedBtn.Position = UDim2.new(percentage, -5, 0.5, -5)
-end
-
-SpeedBtn.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        isSpeedSliding = true
+SpeedInput.FocusLost:Connect(function(enterPressed)
+    local num = tonumber(SpeedInput.Text)
+    if num then
+        -- Giới hạn tốc độ từ 1 đến 999
+        if num < 1 then num = 1 end
+        if num > 999 then num = 999 end
+        SpeedInput.Text = tostring(num)
+        currentSpeed = num
+        
+        -- Cập nhật tốc độ ngay lập tức nếu nhân vật tồn tại
+        if player.Character and player.Character:FindFirstChild("Humanoid") then
+            player.Character.Humanoid.WalkSpeed = currentSpeed
+        end
+    else
+        SpeedInput.Text = tostring(currentSpeed)
     end
 end)
 
-UserInputService.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        isSpeedSliding = false
-    end
+-- Đảm bảo khi hồi sinh (Spawn) lại thì tốc độ cài đặt vẫn giữ nguyên
+player.CharacterAdded:Connect(function(char)
+    local humanoid = char:WaitForChild("Humanoid")
+    task.wait(0.5) -- Đợi nhân vật tải xong hoàn toàn
+    humanoid.WalkSpeed = currentSpeed
 end)
 
-UserInputService.InputChanged:Connect(function(input)
-    if isSpeedSliding and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-        updateSpeedSlider(input)
-    end
-end)
-
--- [2] THANH KÉO SỨC NHẢY (SLIDER JUMP POWER 1 - 1000)
-local JumpSliderFrame = Instance.new("Frame")
-JumpSliderFrame.Name = "JumpSliderFrame"
-JumpSliderFrame.Size = UDim2.new(0, 160, 0, 32)
-JumpSliderFrame.Position = UDim2.new(0, 0, 0, 58)
-JumpSliderFrame.BackgroundTransparency = 1
-JumpSliderFrame.Parent = TongHopFrame
-
-local JumpLabel = Instance.new("TextLabel")
-JumpLabel.Size = UDim2.new(1, 0, 0, 12)
-JumpLabel.BackgroundTransparency = 1
-JumpLabel.Font = Enum.Font.SourceSansBold
-JumpLabel.Text = "Sức nhảy: 50"
-JumpLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-JumpLabel.TextSize = 10
-JumpLabel.TextXAlignment = Enum.TextXAlignment.Left
-JumpLabel.Parent = JumpSliderFrame
-addTextStroke(JumpLabel)
-
-local JumpBar = Instance.new("Frame")
-JumpBar.Size = UDim2.new(1, 0, 0, 4)
-JumpBar.Position = UDim2.new(0, 0, 0, 18)
-JumpBar.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-JumpBar.BorderSizePixel = 0
-JumpBar.Parent = JumpSliderFrame
-
-local JumpBarCorner = Instance.new("UICorner")
-JumpBarCorner.CornerRadius = UDim.new(1, 0)
-JumpBarCorner.Parent = JumpBar
-
-local JumpFill = Instance.new("Frame")
-JumpFill.Size = UDim2.new(0.05, 0, 1, 0)
-JumpFill.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
-JumpFill.BorderSizePixel = 0
-JumpFill.Parent = JumpBar
-
-local JumpFillCorner = Instance.new("UICorner")
-JumpFillCorner.CornerRadius = UDim.new(1, 0)
-JumpFillCorner.Parent = JumpFill
-
-local JumpBtn = Instance.new("ImageButton")
-JumpBtn.Size = UDim2.new(0, 10, 0, 10)
-JumpBtn.Position = UDim2.new(0.05, -5, 0.5, -5)
-JumpBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-JumpBtn.Parent = JumpBar
-
-local JumpBtnCorner = Instance.new("UICorner")
-JumpBtnCorner.CornerRadius = UDim.new(1, 0)
-JumpBtnCorner.Parent = JumpBtn
-
-local currentJump = 50
-local isJumpSliding = false
-
-local function updateJumpSlider(input)
-    local barWidth = JumpBar.AbsoluteSize.X
-    local relativeX = math.clamp(input.Position.X - JumpBar.AbsolutePosition.X, 0, barWidth)
-    local percentage = relativeX / barWidth
-    currentJump = math.floor(1 + (percentage * 999))
-    JumpLabel.Text = "Sức nhảy: " .. tostring(currentJump)
-    
-    JumpFill.Size = UDim2.new(percentage, 0, 1, 0)
-    JumpBtn.Position = UDim2.new(percentage, -5, 0.5, -5)
-end
-
-JumpBtn.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        isJumpSliding = true
-    end
-end)
-
-UserInputService.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        isJumpSliding = false
-    end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-    if isJumpSliding and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-        updateJumpSlider(input)
-    end
-end)
-
--- Vòng lặp khóa Tốc độ & Sức nhảy liên tục
+-- Vòng lặp kiểm tra liên tục để khoá tốc độ (Tránh bị game tự reset về 16)
 task.spawn(function()
     while true do
-        pcall(function()
-            if player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
-                local hum = player.Character:FindFirstChildOfClass("Humanoid")
-                hum.WalkSpeed = currentSpeed
-                hum.UseJumpPower = true
-                hum.JumpPower = currentJump
-            end
-        end)
         task.wait(0.1)
+        if player.Character and player.Character:FindFirstChild("Humanoid") then
+            if player.Character.Humanoid.WalkSpeed ~= currentSpeed then
+                player.Character.Humanoid.WalkSpeed = currentSpeed
+            end
+        end
     end
 end)
+-- =========================================================================
 
--- Hàm tạo nút hành động trong Tab Tổng hợp
-local function createHackButton(name, text, posY, color, onClick)
+-- Bảng cuộn chứa danh sách Script khác nằm dưới ô nhập Speed
+local ScrollFrame = Instance.new("ScrollingFrame")
+ScrollFrame.Size = UDim2.new(1, 0, 0, 200)
+ScrollFrame.Position = UDim2.new(0, 0, 0, 70)
+ScrollFrame.BackgroundTransparency = 1
+ScrollFrame.ScrollBarThickness = 4
+ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 260)
+ScrollFrame.Parent = TongHopFrame
+
+local ScrollLayout = Instance.new("UIListLayout")
+ScrollLayout.SortOrder = Enum.SortOrder.LayoutOrder
+ScrollLayout.Padding = UDim.new(0, 8)
+ScrollLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+ScrollLayout.Parent = ScrollFrame
+
+local function createScriptButton(name, url, order, isLoadstring)
     local btn = Instance.new("TextButton")
-    btn.Name = name
-    btn.Size = UDim2.new(0, 160, 0, 26)
-    btn.Position = UDim2.new(0, 0, 0, posY)
+    btn.Size = UDim2.new(0.95, 0, 0, 35)
     btn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     btn.BackgroundTransparency = 0.3
     btn.Font = Enum.Font.SourceSansBold
-    btn.Text = text
-    btn.TextColor3 = color
-    btn.TextSize = 10
-    btn.Parent = TongHopFrame
+    btn.Text = name
+    btn.TextColor3 = Color3.fromRGB(0, 170, 255)
+    btn.TextSize = 11
+    btn.LayoutOrder = order
+    btn.Parent = ScrollFrame
 
     local corner = Instance.new("UICorner")
     corner.CornerRadius = UDim.new(0, 6)
     corner.Parent = btn
 
     local stroke = Instance.new("UIStroke")
-    stroke.Color = color
+    stroke.Color = Color3.fromRGB(0, 170, 255)
     stroke.Thickness = 1
     stroke.Parent = btn
 
     btn.MouseButton1Click:Connect(function()
-        onClick(btn)
+        pcall(function()
+            if isLoadstring then
+                loadstring(game:HttpGet(url))()
+            else
+                url()
+            end
+        end)
     end)
     return btn
 end
 
--- 1. Nút Float (Đi Trên Không)
-local FloatActive = false
-local floatPart = nil
-createHackButton("BtnFloat", "🎈 Đi Trên Không (Float)", 96, Color3.fromRGB(0, 255, 255), function(btn)
-    FloatActive = not FloatActive
-    if FloatActive then
-        btn.BackgroundColor3 = Color3.fromRGB(0, 255, 255)
-        btn.TextColor3 = Color3.fromRGB(0, 0, 0)
-        
-        task.spawn(function()
-            while FloatActive do
-                pcall(function()
-                    local char = player.Character
-                    local root = char and char:FindFirstChild("HumanoidRootPart")
-                    if root then
-                        if not floatPart or not floatPart.Parent then
-                            floatPart = Instance.new("Part")
-                            floatPart.Name = "FloatPlatform"
-                            floatPart.Size = Vector3.new(6, 0.5, 6)
-                            floatPart.Transparency = 1
-                       
+-- 1. Script Bay (Fly) viết trực tiếp
+local function runFly()
+    local character = player.Character or player.CharacterAdded:Wait()
+    local hrp = character:WaitForChild("HumanoidRootPart")
+    local humanoid = character:WaitForChild("Humanoid")
+    
