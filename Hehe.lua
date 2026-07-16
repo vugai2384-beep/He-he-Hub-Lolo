@@ -717,3 +717,33 @@ BtnToggleMusic2.MouseButton1Click:Connect(function()
         BtnToggleMusic1.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     end
 end)
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+gui.Name = "HeheHub"
+
+local Main = Instance.new("Frame", gui)
+Main.Size = UDim2.new(0, 200, 0, 100)
+Main.Position = UDim2.new(0.5, -100, 0.5, -50)
+Main.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 10)
+
+local btn = Instance.new("TextButton", Main)
+btn.Size = UDim2.new(0.8, 0, 0.6, 0)
+btn.Position = UDim2.new(0.1, 0, 0.2, 0)
+btn.Text = "🎵 PHÁT NHẠC VIỆT REMIX"
+btn.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+Instance.new("UICorner", btn)
+
+local sound = Instance.new("Sound", workspace)
+sound.SoundId = "rbxassetid://82627558368623" 
+
+btn.MouseButton1Click:Connect(function()
+    if sound.IsPlaying then
+        sound:Stop()
+        btn.Text = "🎵 PHÁT NHẠC VIỆT REMIX"
+    else
+        sound:Play()
+        btn.Text = "🎵 ĐANG PHÁT..."
+    end
+end)
