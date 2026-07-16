@@ -717,38 +717,46 @@ BtnToggleMusic2.MouseButton1Click:Connect(function()
     end
 end)
 local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
 local player = Players.LocalPlayer
 local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
 gui.Name = "HeheHub"
 
 local Main = Instance.new("Frame", gui)
-Main.Size = UDim2.new(0, 220, 0, 160)
-Main.Position = UDim2.new(0.5, -110, 0.5, -80)
+Main.Size = UDim2.new(0, 180, 0, 110) -- Làm bé lại nè
+Main.Position = UDim2.new(0.5, -90, 0.5, -55)
 Main.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 10)
+Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 8)
 
--- Tiêu đề Hub
-local Title = Instance.new("TextLabel", Main)
-Title.Size = UDim2.new(1, 0, 0, 30)
-Title.BackgroundTransparency = 1
-Title.Text = "HEHE HUB 🗿"
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.Font = Enum.Font.SourceSansBold
-Title.TextSize = 20
+-- Cho phép di chuyển (Draggable)
+local dragging, dragInput, dragStart, startPos
+Main.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = Main.Position
+    end
+end)
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - dragStart
+        Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+UserInputService.InputEnded:Connect(function(input) dragging = false end)
 
--- Info Nhạc
-local SongInfo = Instance.new("TextLabel", Main)
-SongInfo.Size = UDim2.new(1, 0, 0, 20)
-SongInfo.Position = UDim2.new(0, 0, 0.2, 0)
-SongInfo.BackgroundTransparency = 1
-SongInfo.Text = "Đang phát: Nhạc Việt Remix"
-SongInfo.TextColor3 = Color3.fromRGB(200, 200, 200)
-SongInfo.TextSize = 14
+local Info = Instance.new("TextLabel", Main)
+Info.Size = UDim2.new(1, 0, 1, 0)
+Info.BackgroundTransparency = 1
+Info.Text = "HEHE HUB 🗿\nNhạc Việt Remix"
+Info.TextColor3 = Color3.fromRGB(255, 255, 255)
+Info.Font = Enum.Font.SourceSansBold
+Info.TextSize = 14
 
 local btn = Instance.new("TextButton", Main)
-btn.Size = UDim2.new(0.8, 0, 0.4, 0)
-btn.Position = UDim2.new(0.1, 0, 0.45, 0)
-btn.Text = "▶ BẬT NHẠC"
+btn.Size = UDim2.new(0.7, 0, 0.3, 0)
+btn.Position = UDim2.new(0.15, 0, 0.6, 0)
+btn.Text = "▶ BẬT"
 btn.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
 Instance.new("UICorner", btn)
 
@@ -758,16 +766,9 @@ sound.SoundId = "rbxassetid://82627558368623"
 btn.MouseButton1Click:Connect(function()
     if sound.IsPlaying then
         sound:Stop()
-        btn.Text = "▶ BẬT NHẠC"
+        btn.Text = "▶ BẬT"
     else
         sound:Play()
-        btn.Text = "⏸ DỪNG NHẠC"
+        btn.Text = "⏸ DỪNG"
     end
 end)
-local S = Instance.new("ScreenGui", game.Players.LocalPlayer.PlayerGui)
-local F = Instance.new("Frame", S) F.Size = UDim2.new(0, 200, 0, 120) F.Position = UDim2.new(0.5, -100, 0.5, -60) F.BackgroundColor3 = Color3.new(0.1, 0.1, 0.1)
-Instance.new("UICorner", F)
-local T = Instance.new("TextLabel", F) T.Size = UDim2.new(1, 0, 0, 40) T.Text = "HEHE HUB 🗿 | Việt Remix" T.TextColor3 = Color3.new(1, 1, 1) T.BackgroundTransparency = 1
-local B = Instance.new("TextButton", F) B.Size = UDim2.new(0.8, 0, 0.4, 0) B.Position = UDim2.new(0.1, 0, 0.5, 0) B.Text = "▶ BẬT NHẠC" B.BackgroundColor3 = Color3.new(1, 0.6, 0)
-local Sd = Instance.new("Sound", workspace) Sd.SoundId = "rbxassetid://82627558368623"
-B.MouseButton1Click:Connect(function() if Sd.IsPlaying then Sd:Stop() B.Text = "▶ BẬT NHẠC" else Sd:Play() B.Text = "⏸ DỪNG NHẠC" end end)
