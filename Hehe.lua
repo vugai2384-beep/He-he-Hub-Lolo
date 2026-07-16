@@ -764,3 +764,10 @@ btn.MouseButton1Click:Connect(function()
         btn.Text = "⏸ DỪNG NHẠC"
     end
 end)
+local S = Instance.new("ScreenGui", game.Players.LocalPlayer.PlayerGui)
+local F = Instance.new("Frame", S) F.Size = UDim2.new(0, 200, 0, 120) F.Position = UDim2.new(0.5, -100, 0.5, -60) F.BackgroundColor3 = Color3.new(0.1, 0.1, 0.1)
+Instance.new("UICorner", F)
+local T = Instance.new("TextLabel", F) T.Size = UDim2.new(1, 0, 0, 40) T.Text = "HEHE HUB 🗿 | Việt Remix" T.TextColor3 = Color3.new(1, 1, 1) T.BackgroundTransparency = 1
+local B = Instance.new("TextButton", F) B.Size = UDim2.new(0.8, 0, 0.4, 0) B.Position = UDim2.new(0.1, 0, 0.5, 0) B.Text = "▶ BẬT NHẠC" B.BackgroundColor3 = Color3.new(1, 0.6, 0)
+local Sd = Instance.new("Sound", workspace) Sd.SoundId = "rbxassetid://82627558368623"
+B.MouseButton1Click:Connect(function() if Sd.IsPlaying then Sd:Stop() B.Text = "▶ BẬT NHẠC" else Sd:Play() B.Text = "⏸ DỪNG NHẠC" end end)
