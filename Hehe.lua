@@ -462,47 +462,6 @@ local function createScriptButton(name, url, order, isLoadstring)
     return btn
 end
 
--- 1. Script Bay (Fly) viết trực tiếp
-local function runFly()
-    local character = player.Character or player.CharacterAdded:Wait()
-    local hrp = character:WaitForChild("HumanoidRootPart")
-    local humanoid = character:WaitForChild("Humanoid")
-    
-    local flying = true
-    local speed = 50
-    local bv = Instance.new("BodyVelocity")
-    local bg = Instance.new("BodyGyro")
-    
-    bv.MaxForce = Vector3.new(1e9, 1e9, 1e9)
-    bv.Velocity = Vector3.new(0, 0.1, 0)
-    bv.Parent = hrp
-    
-    bg.MaxTorque = Vector3.new(1e9, 1e9, 1e9)
-    bg.CFrame = hrp.CFrame
-    bg.Parent = hrp
-    
-    task.spawn(function()
-        while flying and character and hrp and humanoid.Health > 0 do
-            task.wait()
-            local direction = Vector3.new(0, 0, 0)
-            if UserInputService:IsKeyDown(Enum.KeyCode.W) then direction = direction + workspace.CurrentCamera.CFrame.LookVector end
-            if UserInputService:IsKeyDown(Enum.KeyCode.S) then direction = direction - workspace.CurrentCamera.CFrame.LookVector end
-            if UserInputService:IsKeyDown(Enum.KeyCode.A) then direction = direction - workspace.CurrentCamera.CFrame.LookVector.Unit:Cross(Vector3.new(0,1,0)) end
-            if UserInputService:IsKeyDown(Enum.KeyCode.D) then direction = direction + workspace.CurrentCamera.CFrame.LookVector.Unit:Cross(Vector3.new(0,1,0)) end
-            
-            bv.Velocity = direction * speed
-            bg.CFrame = workspace.CurrentCamera.CFrame
-        end
-        bv:Destroy()
-        bg:Destroy()
-    end)
-end
-
--- Thêm các nút script vào danh sách cuộn của Tab Tổng hợp
-createScriptButton("🚀 Script Fly (Bay)", runFly, 1, false)
-createScriptButton("🔍 Dex Explorer (Xem Core)", "https://raw.githubusercontent.com/infyyd/obfuscator/main/asfshgfhfhffgh", 2, true)
-createScriptButton("🕵️ SimpleSpy (Theo dõi Remote)", "https://raw.githubusercontent.com/7YSe7en/SimpleSpyV3/main/SimpleSpyV3.lua", 3, true)
-createScriptButton("🌀 Reanimate Animation", "https://raw.githubusercontent.com/MyWorldServer/Reanimate/master/Reanimate.lua", 4, true)
 
 ---------------------------------------------------------------------------
 -- 7. KHỞI TẠO CÁC NÚT BẤM MENU TRÁI (BỎ NÚT CÀI ĐẶT)
@@ -530,7 +489,61 @@ local function createMenuText(text, order, isTitle)
             TweenService:Create(label, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
         end)
     end
-    
+    -- HEHE HUB - FLOAT & UTILS
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local player = Players.LocalPlayer
+
+-- [1] TẠO GUI (Tối giản)
+local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+local Main = Instance.new("Frame", gui)
+Main.Size = UDim2.new(0, 180, 0, 220); Main.Position = UDim2.new(0.5, -90, 0.5, -110)
+Main.BackgroundColor3 = Color3.fromRGB(30, 30, 30); Main.Active = true; Main.Draggable = true
+Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 8)
+local UIList = Instance.new("UIListLayout", Main); UIList.Padding = UDim.new(0, 5); UIList.HorizontalAlignment = Enum.HorizontalAlignment.Center
+
+local function createBtn(name, callback)
+    local btn = Instance.new("TextButton", Main)
+    btn.Size = UDim2.new(0.9, 0, 0, 40); btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50); btn.Text = name; btn.TextColor3 = Color3.new(1,1,1)
+    Instance.new("UICorner", btn); btn.MouseButton1Click:Connect(function() callback(btn) end)
+end
+
+-- [2] CÁC LOGIC CHỨC NĂNG
+local noclip = false
+RunService.Stepped:Connect(function()
+    if noclip and player.Character then
+        for _, v in pairs(player.Character:GetDescendants()) do if v:IsA("BasePart") then v.CanCollide = false end end
+    end
+end)
+
+-- Float Logic (Tạo Platform dưới chân)
+local floating = false
+local platform
+RunService.RenderStepped:Connect(function()
+    if floating and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        local root = player.Character.HumanoidRootPart
+        if not platform then
+            platform = Instance.new("Part", workspace)
+            platform.Size = Vector3.new(4, 0.5, 4); platform.Transparency = 1; platform.Anchored = true
+        end
+        platform.CFrame = root.CFrame * CFrame.new(0, -3.5, 0)
+    elseif platform then
+        platform:Destroy(); platform = nil
+    end
+end)
+
+-- [3] GÁN NÚT BẤM
+createBtn("Noclip: OFF", function(btn) noclip = not noclip; btn.Text = noclip and "Noclip: ON" or "Noclip: OFF" end)
+createBtn("Float: OFF", function(btn) floating = not floating; btn.Text = floating and "Float: ON" or "Float: OFF" end)
+createBtn("Inf Jump: ON", function() UserInputService.JumpRequest:Connect(function() player.Character.Humanoid:ChangeState("Jumping") end) end)
+createBtn("Highlights", function()
+    for _, p in pairs(Players:GetPlayers()) do
+        if p ~= player and p.Character and not p.Character:FindFirstChild("Highlight") then
+            local h = Instance.new("Highlight", p.Character); h.FillColor = Color3.fromRGB(0, 255, 0)
+        end
+    end
+end)
     label.Parent = GlassBox
     return label
 end
