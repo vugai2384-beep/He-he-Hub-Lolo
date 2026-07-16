@@ -702,7 +702,6 @@ BtnToggleMusic1.MouseButton1Click:Connect(function()
         BtnToggleMusic2.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     end
 end)
-
 BtnToggleMusic2.MouseButton1Click:Connect(function()
     if currentMusicId == TRUC_XINH_ID then
         stopBackgroundMusic()
@@ -723,15 +722,33 @@ local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
 gui.Name = "HeheHub"
 
 local Main = Instance.new("Frame", gui)
-Main.Size = UDim2.new(0, 200, 0, 100)
-Main.Position = UDim2.new(0.5, -100, 0.5, -50)
+Main.Size = UDim2.new(0, 220, 0, 160)
+Main.Position = UDim2.new(0.5, -110, 0.5, -80)
 Main.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 10)
 
+-- Tiêu đề Hub
+local Title = Instance.new("TextLabel", Main)
+Title.Size = UDim2.new(1, 0, 0, 30)
+Title.BackgroundTransparency = 1
+Title.Text = "HEHE HUB 🗿"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.Font = Enum.Font.SourceSansBold
+Title.TextSize = 20
+
+-- Info Nhạc
+local SongInfo = Instance.new("TextLabel", Main)
+SongInfo.Size = UDim2.new(1, 0, 0, 20)
+SongInfo.Position = UDim2.new(0, 0, 0.2, 0)
+SongInfo.BackgroundTransparency = 1
+SongInfo.Text = "Đang phát: Nhạc Việt Remix"
+SongInfo.TextColor3 = Color3.fromRGB(200, 200, 200)
+SongInfo.TextSize = 14
+
 local btn = Instance.new("TextButton", Main)
-btn.Size = UDim2.new(0.8, 0, 0.6, 0)
-btn.Position = UDim2.new(0.1, 0, 0.2, 0)
-btn.Text = "🎵 PHÁT NHẠC VIỆT REMIX"
+btn.Size = UDim2.new(0.8, 0, 0.4, 0)
+btn.Position = UDim2.new(0.1, 0, 0.45, 0)
+btn.Text = "▶ BẬT NHẠC"
 btn.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
 Instance.new("UICorner", btn)
 
@@ -741,9 +758,9 @@ sound.SoundId = "rbxassetid://82627558368623"
 btn.MouseButton1Click:Connect(function()
     if sound.IsPlaying then
         sound:Stop()
-        btn.Text = "🎵 PHÁT NHẠC VIỆT REMIX"
+        btn.Text = "▶ BẬT NHẠC"
     else
         sound:Play()
-        btn.Text = "🎵 ĐANG PHÁT..."
+        btn.Text = "⏸ DỪNG NHẠC"
     end
 end)
