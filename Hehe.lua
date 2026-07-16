@@ -391,77 +391,79 @@ BtnJerkOthers.MouseButton1Click:Connect(function()
         end
     end
 end)
+-- 1. TẠO TAB UNIVERSA
+local Tab3 = Instance.new("ScrollingFrame", Main) -- Lưu ý: Đảm bảo "Main" là biến khung chính của bro
+Tab3.Size = UDim2.new(1, 0, 1, 0)
+Tab3.Visible = false 
+Tab3.Name = "Universa"
+Tab3.BackgroundTransparency = 1
+Tab3.CanvasSize = UDim2.new(0, 0, 2, 0) -- Giúp scroll nếu nút quá nhiều
 
----------------------------------------------------------------------------
--- 6. PHÂN HỆ 3: TAB TỔNG HỢP (DANH SÁCH SCRIPT) 📦
----------------------------------------------------------------------------
-local TongHopFrame = Instance.new("Frame")
-TongHopFrame.Name = "TongHopFrame"
-TongHopFrame.Size = UDim2.new(0, 170, 0, 280)
-TongHopFrame.Position = UDim2.new(0, 138, 0, 20)
-TongHopFrame.BackgroundTransparency = 1
-TongHopFrame.Visible = false
-TongHopFrame.Parent = MainMenu
+-- 2. TẠO LAYOUT
+local UIList = Instance.new("UIListLayout", Tab3)
+UIList.Padding = UDim.new(0, 8)
+UIList.HorizontalAlignment = Enum.HorizontalAlignment.Center
+UIList.PaddingTop = UDim.new(0, 10)
 
-local TongHopTitle = Instance.new("TextLabel")
-TongHopTitle.Size = UDim2.new(1, 0, 0, 25)
-TongHopTitle.BackgroundTransparency = 1
-TongHopTitle.Font = Enum.Font.SourceSansBold
-TongHopTitle.Text = "📦 TỔNG HỢP SCRIPT 📦"
-TongHopTitle.TextColor3 = Color3.fromRGB(0, 170, 255)
-TongHopTitle.TextSize = 13
-TongHopTitle.TextXAlignment = Enum.TextXAlignment.Left
-TongHopTitle.Parent = TongHopFrame
-addTextStroke(TongHopTitle)
-
--- Bảng cuộn chứa danh sách Script khác (Kéo dài hết mức do không có ô speed)
-local ScrollFrame = Instance.new("ScrollingFrame")
-ScrollFrame.Size = UDim2.new(1, 0, 0, 230)
-ScrollFrame.Position = UDim2.new(0, 0, 0, 35)
-ScrollFrame.BackgroundTransparency = 1
-ScrollFrame.ScrollBarThickness = 4
-ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 240)
-ScrollFrame.Parent = TongHopFrame
-
-local ScrollLayout = Instance.new("UIListLayout")
-ScrollLayout.SortOrder = Enum.SortOrder.LayoutOrder
-ScrollLayout.Padding = UDim.new(0, 8)
-ScrollLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-ScrollLayout.Parent = ScrollFrame
-
-local function createScriptButton(name, url, order, isLoadstring)
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0.95, 0, 0, 35)
+-- 3. HÀM TẠO NÚT BẤM
+local function createBtn(name, callback)
+    local btn = Instance.new("TextButton", Tab3)
+    btn.Size = UDim2.new(0.9, 0, 0, 45)
     btn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    btn.BackgroundTransparency = 0.3
-    btn.Font = Enum.Font.SourceSansBold
     btn.Text = name
-    btn.TextColor3 = Color3.fromRGB(0, 170, 255)
-    btn.TextSize = 11
-    btn.LayoutOrder = order
-    btn.Parent = ScrollFrame
-
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 6)
-    corner.Parent = btn
-
-    local stroke = Instance.new("UIStroke")
-    stroke.Color = Color3.fromRGB(0, 170, 255)
-    stroke.Thickness = 1
-    stroke.Parent = btn
-
-    btn.MouseButton1Click:Connect(function()
-        pcall(function()
-            if isLoadstring then
-                loadstring(game:HttpGet(url))()
-            else
-                url()
-            end
-        end)
-    end)
+    btn.TextColor3 = Color3.new(1, 1, 1)
+    btn.Font = Enum.Font.GothamBold
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+    btn.MouseButton1Click:Connect(function() callback(btn) end)
     return btn
 end
 
+-- 4. CÁC NÚT TÍNH NĂNG (ĐÃ CÓ LOGIC)
+local noclip = false
+game:GetService("RunService").Stepped:Connect(function()
+    if noclip and game.Players.LocalPlayer.Character then
+        for _, v in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do
+            if v:IsA("BasePart") then v.CanCollide = false end
+        end
+    end
+end)
+
+createBtn("Noclip: OFF", function(btn)
+    noclip = not noclip
+    btn.Text = noclip and "Noclip: ON" or "Noclip: OFF"
+end)
+
+local floating = false
+local platform
+createBtn("Float: OFF", function(btn)
+    floating = not floating
+    btn.Text = floating and "Float: ON" or "Float: OFF"
+    if floating then
+        platform = Instance.new("Part", workspace); platform.Size = Vector3.new(4, 0.5, 4); platform.Transparency = 1; platform.Anchored = true
+        task.spawn(function()
+            while floating and game.Players.LocalPlayer.Character do
+                platform.CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(0, -3.5, 0)
+                task.wait()
+            end
+            if platform then platform:Destroy() end
+        end)
+    end
+end)
+
+createBtn("Inf Jump", function()
+    game:GetService("UserInputService").JumpRequest:Connect(function()
+        game.Players.LocalPlayer.Character.Humanoid:ChangeState("Jumping")
+    end)
+end)
+
+createBtn("Highlights", function()
+    for _, p in pairs(game.Players:GetPlayers()) do
+        if p ~= game.Players.LocalPlayer and p.Character and not p.Character:FindFirstChild("Highlight") then
+            local h = Instance.new("Highlight", p.Character)
+            h.FillColor = Color3.fromRGB(255, 0, 0)
+        end
+    end
+end)
 
 ---------------------------------------------------------------------------
 -- 7. KHỞI TẠO CÁC NÚT BẤM MENU TRÁI (BỎ NÚT CÀI ĐẶT)
