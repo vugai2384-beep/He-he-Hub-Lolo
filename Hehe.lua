@@ -61,7 +61,29 @@ local gui = Instance.new("ScreenGui")
 gui.Name = "NguoiNgoaiHanhTinh"
 gui.ResetOnSpawn = false
 gui.Parent = playerGui
+-- TAB UNIVERSA
+local Tab3 = Instance.new("ScrollingFrame", gui)
+Tab3.Size = UDim2.new(0.5, 0, 0.5, 0) -- Chỉnh size vừa phải
+Tab3.Position = UDim2.new(0.2, 0, 0.2, 0) -- Đặt ở giữa màn hình
+Tab3.Visible = false 
+Tab3.Name = "Universa"
+Tab3.BackgroundTransparency = 0.5
+Tab3.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 
+local UIList = Instance.new("UIListLayout", Tab3)
+UIList.Padding = UDim.new(0, 5)
+
+local function createBtn(name, callback)
+    local btn = Instance.new("TextButton", Tab3)
+    btn.Size = UDim2.new(0.9, 0, 0, 40)
+    btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    btn.Text = name
+    btn.TextColor3 = Color3.new(1,1,1)
+    btn.MouseButton1Click:Connect(callback)
+end
+
+createBtn("Noclip", function() print("Noclip") end)
+createBtn("Float", function() print("Float") end)
 ---------------------------------------------------------------------------
 -- 1. NÚT TRÒN BẬT/TẮT MENU (Kéo thả được)
 ---------------------------------------------------------------------------
@@ -391,80 +413,6 @@ BtnJerkOthers.MouseButton1Click:Connect(function()
         end
     end
 end)
--- 1. TẠO TAB UNIVERSA
-local Tab3 = Instance.new("ScrollingFrame", Main) -- Lưu ý: Đảm bảo "Main" là biến khung chính của bro
-Tab3.Size = UDim2.new(1, 0, 1, 0)
-Tab3.Visible = false 
-Tab3.Name = "Universa"
-Tab3.BackgroundTransparency = 1
-Tab3.CanvasSize = UDim2.new(0, 0, 2, 0) -- Giúp scroll nếu nút quá nhiều
-
--- 2. TẠO LAYOUT
-local UIList = Instance.new("UIListLayout", Tab3)
-UIList.Padding = UDim.new(0, 8)
-UIList.HorizontalAlignment = Enum.HorizontalAlignment.Center
-UIList.PaddingTop = UDim.new(0, 10)
-
--- 3. HÀM TẠO NÚT BẤM
-local function createBtn(name, callback)
-    local btn = Instance.new("TextButton", Tab3)
-    btn.Size = UDim2.new(0.9, 0, 0, 45)
-    btn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    btn.Text = name
-    btn.TextColor3 = Color3.new(1, 1, 1)
-    btn.Font = Enum.Font.GothamBold
-    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
-    btn.MouseButton1Click:Connect(function() callback(btn) end)
-    return btn
-end
-
--- 4. CÁC NÚT TÍNH NĂNG (ĐÃ CÓ LOGIC)
-local noclip = false
-game:GetService("RunService").Stepped:Connect(function()
-    if noclip and game.Players.LocalPlayer.Character then
-        for _, v in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do
-            if v:IsA("BasePart") then v.CanCollide = false end
-        end
-    end
-end)
-
-createBtn("Noclip: OFF", function(btn)
-    noclip = not noclip
-    btn.Text = noclip and "Noclip: ON" or "Noclip: OFF"
-end)
-
-local floating = false
-local platform
-createBtn("Float: OFF", function(btn)
-    floating = not floating
-    btn.Text = floating and "Float: ON" or "Float: OFF"
-    if floating then
-        platform = Instance.new("Part", workspace); platform.Size = Vector3.new(4, 0.5, 4); platform.Transparency = 1; platform.Anchored = true
-        task.spawn(function()
-            while floating and game.Players.LocalPlayer.Character do
-                platform.CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(0, -3.5, 0)
-                task.wait()
-            end
-            if platform then platform:Destroy() end
-        end)
-    end
-end)
-
-createBtn("Inf Jump", function()
-    game:GetService("UserInputService").JumpRequest:Connect(function()
-        game.Players.LocalPlayer.Character.Humanoid:ChangeState("Jumping")
-    end)
-end)
-
-createBtn("Highlights", function()
-    for _, p in pairs(game.Players:GetPlayers()) do
-        if p ~= game.Players.LocalPlayer and p.Character and not p.Character:FindFirstChild("Highlight") then
-            local h = Instance.new("Highlight", p.Character)
-            h.FillColor = Color3.fromRGB(255, 0, 0)
-        end
-    end
-end)
-
 ---------------------------------------------------------------------------
 -- 7. KHỞI TẠO CÁC NÚT BẤM MENU TRÁI (BỎ NÚT CÀI ĐẶT)
 ---------------------------------------------------------------------------
