@@ -9,8 +9,8 @@ local player = Players.LocalPlayer
 -- 🔔 THÔNG BÁO KIỂM TRA
 pcall(function()
     game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "DUC ANH HUB v3.1",
-        Text = "Đã cập nhật Tab Info Rainbow cực cháy!",
+        Title = "DUC ANH HUB V1",
+        Text = "Update đầu tiên!!!!!!",
         Duration = 5
     })
 end)
@@ -146,7 +146,7 @@ local function createTabContainer()
     sf.Size = UDim2.new(0.75, -10, 1, -65)
     sf.Position = UDim2.new(0.24, 10, 0, 55)
     sf.BackgroundTransparency = 1
-    sf.CanvasSize = UDim2.new(0, 0, 0, 280)
+    sf.CanvasSize = UDim2.new(0, 0, 0, 320)
     sf.ScrollBarThickness = 3
     sf.Visible = false
     sf.Parent = ContainerHolder
@@ -198,7 +198,6 @@ InfoLabel.TextYAlignment = Enum.TextYAlignment.Top
 InfoLabel.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Bold)
 InfoLabel.Parent = Tab1Container
 
--- Hiệu ứng Rainbow cho chữ ở Tab Info
 local infoConnection
 infoConnection = RunService.RenderStepped:Connect(function()
     if not InfoLabel or not InfoLabel.Parent then
@@ -233,6 +232,15 @@ local function createMenuButton(name, parentContainer, callback)
     end)
     return btn
 end
+
+-- 0. Anti Slap
+createMenuButton("Anti Slap", Tab2Container, function(state)
+    if state then
+        pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/amdzy088/Immune-slap-tower-/refs/heads/main/Immune%20slap%20tower%20work"))()
+        end)
+    end
+end)
 
 -- 1. Highlights
 local espConnection
@@ -385,4 +393,4 @@ CloseButton.MouseButton1Click:Connect(function()
     MenuFrame.Visible = false
 end)
 
-print("🚀 Đã cập nhật Tab Info Rainbow thành công!")
+print("🚀 Đã sửa thành Anti Slap chuẩn chỉ!")
